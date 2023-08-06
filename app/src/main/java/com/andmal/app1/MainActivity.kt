@@ -1,6 +1,7 @@
 package com.andmal.app1
 
 import android.os.Bundle
+import android.os.StrictMode
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -25,16 +26,24 @@ import androidx.compose.ui.unit.sp
 import com.andmal.app1.ui.theme.App1Theme
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import org.json.JSONArray
-import java.net.HttpURLConnection
-import java.net.URL
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlin.random.Random
 
+const val workoutsUrl =
+    "https://us-central1-workouts-app2.cloudfunctions.net/go_gcp_cfunc_mongo_workouts"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
 
         setContent {
             App1Theme {
@@ -43,30 +52,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val workoutsUrl =
-                        "https://us-central1-workouts-app2.cloudfunctions.net/go_gcp_cfunc_mongo_workouts"
+                    val workouts: MutableList<Workout> = mutableListOf()
 
-                    val volleyQueue = Volley.newRequestQueue(this)
-
-                    val jsonObjectRequest = JsonArrayRequest(
-                        Request.Method.GET,
-                        workoutsUrl,
-                        null,
-                        { response ->
-                            val workout = response.get(0)
-                            Log.d("workout", workout.toString())
-                        },
-
-                        { error ->
-                            Toast.makeText(this, "Some error occurred! Cannot fetch dog image", Toast.LENGTH_LONG).show()
-                            // log the error message in the error stream
-                            Log.e("MainActivity", "loadDogImage error: ${error.localizedMessage}")
-                        }
-                    )
-
-                    volleyQueue.add(jsonObjectRequest)
-
-                    Greeting(workouts = listOf<String>("content", "bbb"))
+                    WorkoutData(workouts = workouts)
                 }
             }
         }
@@ -74,7 +62,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(workouts: List<String>, modifier: Modifier = Modifier) {
+fun WorkoutData(workouts: List<Workout>, modifier: Modifier = Modifier) {
     Column(
         Modifier
             .padding(10.dp)
@@ -84,7 +72,7 @@ fun Greeting(workouts: List<String>, modifier: Modifier = Modifier) {
         workouts.forEach { workout ->
             Row {
                 Text(
-                    text = "$workout",
+                    text = workout.id,
                     fontSize = TextUnit(11.0F, TextUnitType.Em),
                     lineHeight = 60.sp
                 )
@@ -93,6 +81,11 @@ fun Greeting(workouts: List<String>, modifier: Modifier = Modifier) {
 
         Row {
             Button(onClick = {
+                runBlocking {
+                    launch {
+                        getWorkouts()
+                    }
+                }
 
             }) {
                 Text(text = "Click")
@@ -101,10 +94,28 @@ fun Greeting(workouts: List<String>, modifier: Modifier = Modifier) {
     }
 }
 
+private suspend fun getWorkouts(): MutableList<Workout> {
+    val workouts = mutableListOf<Workout>()
+
+    val client = HttpClient(CIO)
+    val response: HttpResponse = client.get(workoutsUrl)
+    Log.d(">>>>> Ktor: response", response.status.toString())
+
+
+}
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     App1Theme {
-        Greeting(workouts = listOf("aaa", "bbb"))
+        WorkoutData(
+            workouts = listOf(
+                Workout(
+                    "1L", "", 2, "", "",
+                    "", "", 2, 2023, "", ""
+                )
+            )
+        )
     }
 }
+
