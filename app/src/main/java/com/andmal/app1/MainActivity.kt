@@ -3,7 +3,6 @@ package com.andmal.app1
 import android.os.Bundle
 import android.os.StrictMode
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -23,17 +22,20 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.andmal.app1.ui.theme.App1Theme
-import com.android.volley.Request
-import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.Volley
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.random.Random
+import org.json.JSONArray
 
 const val workoutsUrl =
     "https://us-central1-workouts-app2.cloudfunctions.net/go_gcp_cfunc_mongo_workouts"
@@ -52,9 +54,19 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val workouts: MutableList<Workout> = mutableListOf()
-
-                    WorkoutData(workouts = workouts)
+                    val viewModel = MainViewModel(
+                        SavedStateHandle(
+                            mapOf("wid" to "11111")
+                        ), WorkoutRepo()
+                    )
+                    WorkoutData(
+                        workouts = viewModel.workouts.value ?: listOf(
+                            Workout(
+                                "1L", "", 2, "", "",
+                                "", "", 2, 2023, "", ""
+                            )
+                        )
+                    )
                 }
             }
         }
@@ -81,12 +93,11 @@ fun WorkoutData(workouts: List<Workout>, modifier: Modifier = Modifier) {
 
         Row {
             Button(onClick = {
-                runBlocking {
-                    launch {
-                        getWorkouts()
-                    }
-                }
-
+//                MainViewModel(
+//                    SavedStateHandle(
+//                        mapOf("wid" to "11111")
+//                    ), WorkoutRepo()
+//                )
             }) {
                 Text(text = "Click")
             }
@@ -94,15 +105,6 @@ fun WorkoutData(workouts: List<Workout>, modifier: Modifier = Modifier) {
     }
 }
 
-private suspend fun getWorkouts(): MutableList<Workout> {
-    val workouts = mutableListOf<Workout>()
-
-    val client = HttpClient(CIO)
-    val response: HttpResponse = client.get(workoutsUrl)
-    Log.d(">>>>> Ktor: response", response.status.toString())
-
-
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -117,5 +119,30 @@ fun GreetingPreview() {
             )
         )
     }
+}
+
+class MainViewModel constructor(
+    savedStateHandle: SavedStateHandle,
+    workoutRepo: WorkoutRepo
+) : ViewModel() {
+    private val workoutId: String =
+        savedStateHandle["wid"] ?: throw IllegalArgumentException("Missing workout id")
+
+    private val _workouts = MutableLiveData<List<Workout>>()
+    val workouts = _workouts as LiveData<List<Workout>>
+
+    init {
+        viewModelScope.launch {
+            try {
+                val workouts = workoutRepo.getWorkouts()
+                Log.d(">>>>>> workouts", workouts.toString())
+                _workouts.value = workouts
+            } catch (error: Exception) {
+                // Show error message to user
+            }
+
+        }
+    }
+
 }
 
