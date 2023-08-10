@@ -1,6 +1,7 @@
-package com.andmal.app1
+package com.andmal.app1.api
 
 import android.util.Log
+import com.andmal.app1.data.Workout
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
@@ -9,11 +10,13 @@ import io.ktor.client.statement.bodyAsText
 import org.json.JSONArray
 
 class WorkoutRepo {
+    private val BASE_URL =
+        "https://us-central1-workouts-app2.cloudfunctions.net/go_gcp_cfunc_mongo_workouts"
     suspend fun getWorkouts(): MutableList<Workout> {
         val workouts: MutableList<Workout> = mutableListOf<Workout>()
 
         val client = HttpClient(CIO)
-        val response: HttpResponse = client.get(workoutsUrl)
+        val response: HttpResponse = client.get(BASE_URL)
         Log.d(">>>>> Ktor: response", response.status.toString())
 
         val body = response.bodyAsText()

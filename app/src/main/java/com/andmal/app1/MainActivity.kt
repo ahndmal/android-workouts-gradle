@@ -23,33 +23,39 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.andmal.app1.api.WorkoutRepo
+import com.andmal.app1.data.Workout
 import com.andmal.app1.ui.theme.App1Theme
+import com.andmal.app1.viewmodels.WorkoutsViewModel
 import kotlinx.coroutines.launch
 
-
-const val workoutsUrl =
-    "https://us-central1-workouts-app2.cloudfunctions.net/go_gcp_cfunc_mongo_workouts"
 
 class MainActivity : ComponentActivity() {
     private val workoutRepo: WorkoutRepo = WorkoutRepo()
     private val workouts = mutableListOf<Workout>()
 
+    val viewModel: WorkoutsViewModel by viewModels()
+
     override fun onStart() {
         super.onStart()
+        val state = lifecycle.currentState
         Log.d(">> start", "start")
+        Log.d(">> currentState", state.toString())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-//        val model: MainViewModel by viewModels()
 
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
@@ -64,8 +70,11 @@ class MainActivity : ComponentActivity() {
                     WorkoutData(
                         workouts = listOf(
                             Workout(
-                                "1L", "", 2, "", "",
-                                "", "", 2, 2023, "", ""
+                                "1L", "", 2,
+                                "lorem ipsum...",
+                                "",
+                                "Monday",
+                                "", 2, 2023, "", ""
                             )
                         )
                     )
@@ -101,16 +110,29 @@ class MainActivity : ComponentActivity() {
 
             workouts.forEach { workout ->
                 Row(Modifier.padding(8.dp)) {
-                    Text(
-                        text = workout.id,
-                        fontSize = TextUnit(3.0F, TextUnitType.Em),
-                        lineHeight = 20.sp
-                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .width(200.dp)
+                            .height(100.dp)
+                            .background(Color.Blue)
+                    ) {
+                        Text(
+                            text = workout.id,
+                            fontSize = TextUnit(3.0F, TextUnitType.Em),
+                            lineHeight = 20.sp
+                        )
+                        Text(
+                            text = workout.comments.toString(),
+                            fontSize = TextUnit(3.0F, TextUnitType.Em),
+                            lineHeight = 20.sp
+                        )
+                    }
 
                     Text(
-                        text = workout.day.toString(),
-                        fontSize = TextUnit(3.0F, TextUnitType.Em),
-                        lineHeight = 20.sp
+                        text = "Text after box",
+                        fontSize = TextUnit(4.0F, TextUnitType.Em),
+                        lineHeight = 18.sp
                     )
                 }
             }
@@ -134,8 +156,11 @@ class MainActivity : ComponentActivity() {
             WorkoutData(
                 workouts = listOf(
                     Workout(
-                        "1L", "", 2, "", "",
-                        "", "", 2, 2023, "", ""
+                        "1L", "12",
+                        2,
+                        "lorem ipsum...",
+                        "",
+                        "Monday", "", 2, 2023, "", ""
                     )
                 )
             )
@@ -143,40 +168,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class MainViewModel constructor(
-    savedStateHandle: SavedStateHandle,
-    workoutRepo: WorkoutRepo
-) : ViewModel() {
-    private val workoutId: String =
-        savedStateHandle["wid"] ?: throw IllegalArgumentException("Missing workout id")
 
-    private val _refresh = MutableLiveData<Boolean>()
-    val refresh = _refresh as LiveData<Boolean>
-
-    private val _workouts = MutableLiveData<MutableList<Workout>>()
-    val workouts = _workouts as LiveData<MutableList<Workout>>
-
-    init {
-        viewModelScope.launch {
-            try {
-                _refresh.value = true
-                val workouts = workoutRepo.getWorkouts()
-
-                Log.d(">>>>>> workouts", workouts.toString())
-
-                _workouts.value = workouts
-            } catch (error: Exception) {
-                // Show error message to user
-            }
-
-        }
+class MyObserver : DefaultLifecycleObserver {
+    override fun onResume(owner: LifecycleOwner) {
+        Log.d("onResume", "onResume")
     }
 
-    fun refresh() {
-        viewModelScope.launch {
-            if (_refresh.value == true) _refresh.value = false else _refresh.value = true
-        }
+    override fun onStart(owner: LifecycleOwner) {
+        Log.d("onStart", "onStart")
     }
 
+    override fun onPause(owner: LifecycleOwner) {
+        Log.d("onPause", "onPause")
+    }
 }
-

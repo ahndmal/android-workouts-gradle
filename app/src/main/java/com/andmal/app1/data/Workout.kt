@@ -1,4 +1,4 @@
-package com.andmal.app1
+package com.andmal.app1.data
 
 data class Workout(
     val id: String,
