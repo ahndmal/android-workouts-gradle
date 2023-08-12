@@ -8,8 +8,9 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import org.json.JSONArray
+import javax.inject.Inject
 
-class WorkoutRepo {
+class WorkoutRepo @Inject constructor() {
     private val BASE_URL =
         "https://us-central1-workouts-app2.cloudfunctions.net/go_gcp_cfunc_mongo_workouts"
     suspend fun getWorkouts(): MutableList<Workout> {

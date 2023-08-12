@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,9 +34,11 @@ import com.andmal.app1.api.WorkoutRepo
 import com.andmal.app1.data.Workout
 import com.andmal.app1.ui.theme.App1Theme
 import com.andmal.app1.viewmodels.WorkoutsViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
 
-class MainActivity : ComponentActivity() {
+@AndroidEntryPoint
+class MainActivity : AppCompatActivity() {
     private val workoutRepo: WorkoutRepo = WorkoutRepo()
     private val workouts = mutableListOf<Workout>()
 

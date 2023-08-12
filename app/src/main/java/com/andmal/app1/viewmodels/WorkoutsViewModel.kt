@@ -8,10 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.andmal.app1.api.WorkoutRepo
 import com.andmal.app1.data.Workout
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class WorkoutsViewModel constructor(
+
+@HiltViewModel
+class WorkoutsViewModel @Inject public constructor(
     savedStateHandle: SavedStateHandle,
     workoutRepo: WorkoutRepo
 ) : ViewModel() {
