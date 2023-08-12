@@ -8,14 +8,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.andmal.app1.api.WorkoutRepo
 import com.andmal.app1.data.Workout
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
-class WorkoutsViewModel  constructor(
+class WorkoutsViewModel constructor(
     savedStateHandle: SavedStateHandle,
     workoutRepo: WorkoutRepo
 ) : ViewModel() {
-    private val workoutId: String =
-        savedStateHandle["wid"] ?: throw IllegalArgumentException("Missing workout id")
+//    private val month: String =
+//        savedStateHandle["wMonth"] ?: throw IllegalArgumentException("Missing workout id")
+
+    private val month: MutableStateFlow<String?> = MutableStateFlow(
+        savedStateHandle.get<String>("month")
+    )
 
     private val _refresh = MutableLiveData<Boolean>()
     val refresh = _refresh as LiveData<Boolean>
@@ -26,7 +31,7 @@ class WorkoutsViewModel  constructor(
     init {
         viewModelScope.launch {
             try {
-                _refresh.value = true
+//                _refresh.value = true
                 val workouts = workoutRepo.getWorkouts()
 
                 Log.d(">>>>>> workouts", workouts.toString())

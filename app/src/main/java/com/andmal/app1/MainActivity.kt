@@ -7,10 +7,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -23,22 +26,13 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.andmal.app1.api.WorkoutRepo
 import com.andmal.app1.data.Workout
 import com.andmal.app1.ui.theme.App1Theme
 import com.andmal.app1.viewmodels.WorkoutsViewModel
-import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
@@ -66,17 +60,17 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-
                     WorkoutData(
-                        workouts = listOf(
-                            Workout(
-                                "1L", "", 2,
-                                "lorem ipsum...",
-                                "",
-                                "Monday",
-                                "", 2, 2023, "", ""
-                            )
-                        )
+//                        workouts = listOf(
+//                            Workout(
+//                                "1L", "", 2,
+//                                "lorem ipsum...",
+//                                "",
+//                                "Monday",
+//                                "", 2, 2023, "", ""
+//                            )
+//                        )
+                        workoutsViewModel = viewModel
                     )
                 }
             }
@@ -92,7 +86,10 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun WorkoutData(workouts: List<Workout>, modifier: Modifier = Modifier) {
+    fun WorkoutData(
+        workoutsViewModel: WorkoutsViewModel,
+        modifier: Modifier = Modifier
+    ) {
         Column(
             Modifier
                 .padding(10.dp)
@@ -107,8 +104,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.padding(7.dp)
                 )
             }
-
-            workouts.forEach { workout ->
+            val workouts = workoutsViewModel.workouts.value
+            workouts?.forEach { workout ->
                 Row(Modifier.padding(8.dp)) {
                     Box(
                         modifier = Modifier
@@ -151,19 +148,21 @@ class MainActivity : ComponentActivity() {
 
     @Preview(showBackground = true)
     @Composable
-    fun GreetingPreview() {
+    fun GreetingPreview(
+
+    ) {
         App1Theme {
-            WorkoutData(
-                workouts = listOf(
-                    Workout(
-                        "1L", "12",
-                        2,
-                        "lorem ipsum...",
-                        "",
-                        "Monday", "", 2, 2023, "", ""
-                    )
-                )
-            )
+//            WorkoutData(
+//                workouts = mutableListOf(
+//                    Workout(
+//                        "1L", "12",
+//                        2,
+//                        "lorem ipsum...",
+//                        "",
+//                        "Monday", "", 2, 2023, "", ""
+//                    )
+//                )
+//            )
         }
     }
 }
